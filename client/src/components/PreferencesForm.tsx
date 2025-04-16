@@ -25,6 +25,19 @@ const PreferencesForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isDragging, setIsDragging] = useState<"min" | "max" | null>(null);
+  const [validFields, setValidFields] = useState<{
+    zipCode: boolean;
+    targetCalories: boolean;
+    proteinGrams: boolean;
+    carbsGrams: boolean;
+    fatsGrams: boolean;
+  }>({
+    zipCode: false,
+    targetCalories: false,
+    proteinGrams: false,
+    carbsGrams: false,
+    fatsGrams: false,
+  });
   const [skippedMacros, setSkippedMacros] = useState<{
     protein: boolean;
     carbs: boolean;
@@ -109,6 +122,7 @@ const PreferencesForm: React.FC = () => {
         updatePreferences({
           targetCalories: undefined,
         });
+        setValidFields((prev) => ({ ...prev, targetCalories: false }));
         return;
       }
 
@@ -116,6 +130,26 @@ const PreferencesForm: React.FC = () => {
       updatePreferences({
         targetCalories: calories,
       });
+      setValidFields((prev) => ({ ...prev, targetCalories: calories > 0 }));
+    } else if (name === "zipCode") {
+      updatePreferences({ [name]: value });
+      setValidFields((prev) => ({ ...prev, zipCode: /^\d{5}$/.test(value) }));
+    } else if (
+      name === "proteinGrams" ||
+      name === "carbsGrams" ||
+      name === "fatsGrams"
+    ) {
+      if (value === "") {
+        updatePreferences({ [name]: undefined });
+        setValidFields((prev) => ({ ...prev, [name]: false }));
+        return;
+      }
+
+      const grams = parseInt(value) || 0;
+      updatePreferences({ [name]: grams });
+
+      const fieldName = name as "proteinGrams" | "carbsGrams" | "fatsGrams";
+      setValidFields((prev) => ({ ...prev, [fieldName]: grams > 0 }));
     } else {
       updatePreferences({ [name]: value });
     }
@@ -234,236 +268,301 @@ const PreferencesForm: React.FC = () => {
   return (
     <div className="preferences-form-container">
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="targetCalories">Target Calories</label>
-          <input
-            type="number"
-            id="targetCalories"
-            name="targetCalories"
-            value={
-              preferences.targetCalories === undefined
-                ? ""
-                : preferences.targetCalories
-            }
-            onChange={handleInputChange}
-            min="0"
-            step="10"
-            required
-            placeholder="Enter target calories"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="proteinGrams">Protein (g)</label>
-          <div className="input-with-skip">
+        <div className="form-section">
+          <div className="form-section-header">
+            <h2 className="form-section-title">
+              Calorie & Macronutrient Goals
+            </h2>
+            <p className="form-section-subtitle">
+              Set your daily calorie target and macronutrient preferences
+            </p>
+          </div>
+          <div className="form-group">
+            <label htmlFor="targetCalories">Target Calories</label>
             <input
               type="number"
-              id="proteinGrams"
-              name="proteinGrams"
+              id="targetCalories"
+              name="targetCalories"
               value={
-                preferences.proteinGrams === undefined
+                preferences.targetCalories === undefined
                   ? ""
-                  : preferences.proteinGrams
+                  : preferences.targetCalories
               }
               onChange={handleInputChange}
               min="0"
-              required={!skippedMacros.protein}
-              placeholder={
-                preferences.targetCalories && !skippedMacros.protein
-                  ? `Recommended: ${recommendedMacros.protein}g`
-                  : "Enter protein in grams"
-              }
-              className={skippedMacros.protein ? "skipped" : ""}
-              disabled={skippedMacros.protein}
-            />
-            <button
-              type="button"
-              onClick={() => handleSkipMacro("protein")}
-              className={`skip-button ${
-                skippedMacros.protein ? "skipped" : ""
+              step="10"
+              required
+              placeholder="Enter target calories"
+              className={`field-complete ${
+                validFields.targetCalories ? "valid" : ""
               }`}
-            >
-              {skippedMacros.protein ? "Skipped" : "Skip"}
-            </button>
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="carbsGrams">Carbs (g)</label>
-          <div className="input-with-skip">
-            <input
-              type="number"
-              id="carbsGrams"
-              name="carbsGrams"
-              value={
-                preferences.carbsGrams === undefined
-                  ? ""
-                  : preferences.carbsGrams
-              }
-              onChange={handleInputChange}
-              min="0"
-              required={!skippedMacros.carbs}
-              placeholder={
-                preferences.targetCalories && !skippedMacros.carbs
-                  ? `Recommended: ${recommendedMacros.carbs}g`
-                  : "Enter carbs in grams"
-              }
-              className={skippedMacros.carbs ? "skipped" : ""}
-              disabled={skippedMacros.carbs}
             />
-            <button
-              type="button"
-              onClick={() => handleSkipMacro("carbs")}
-              className={`skip-button ${skippedMacros.carbs ? "skipped" : ""}`}
-            >
-              {skippedMacros.carbs ? "Skipped" : "Skip"}
-            </button>
+            <p className="helper-text">
+              We'll use this to find meals that match your daily energy needs
+            </p>
+          </div>
+
+          <div className="macros-container">
+            <div className="form-group">
+              <label htmlFor="proteinGrams">Protein (g)</label>
+              <div className="input-with-skip">
+                <input
+                  type="number"
+                  id="proteinGrams"
+                  name="proteinGrams"
+                  value={
+                    preferences.proteinGrams === undefined
+                      ? ""
+                      : preferences.proteinGrams
+                  }
+                  onChange={handleInputChange}
+                  min="0"
+                  required={!skippedMacros.protein}
+                  placeholder={
+                    preferences.targetCalories && !skippedMacros.protein
+                      ? `Recommended: ${recommendedMacros.protein}g`
+                      : "Enter protein in grams"
+                  }
+                  className={`${
+                    skippedMacros.protein ? "skipped" : ""
+                  } field-complete ${validFields.proteinGrams ? "valid" : ""}`}
+                  disabled={skippedMacros.protein}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSkipMacro("protein")}
+                  className={`skip-button ${
+                    skippedMacros.protein ? "skipped" : ""
+                  }`}
+                >
+                  {skippedMacros.protein ? "Skipped" : "Skip"}
+                </button>
+              </div>
+              <p className="helper-text">
+                Protein helps with muscle maintenance and satiety
+              </p>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="carbsGrams">Carbs (g)</label>
+              <div className="input-with-skip">
+                <input
+                  type="number"
+                  id="carbsGrams"
+                  name="carbsGrams"
+                  value={
+                    preferences.carbsGrams === undefined
+                      ? ""
+                      : preferences.carbsGrams
+                  }
+                  onChange={handleInputChange}
+                  min="0"
+                  required={!skippedMacros.carbs}
+                  placeholder={
+                    preferences.targetCalories && !skippedMacros.carbs
+                      ? `Recommended: ${recommendedMacros.carbs}g`
+                      : "Enter carbs in grams"
+                  }
+                  className={`${
+                    skippedMacros.carbs ? "skipped" : ""
+                  } field-complete ${validFields.carbsGrams ? "valid" : ""}`}
+                  disabled={skippedMacros.carbs}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSkipMacro("carbs")}
+                  className={`skip-button ${
+                    skippedMacros.carbs ? "skipped" : ""
+                  }`}
+                >
+                  {skippedMacros.carbs ? "Skipped" : "Skip"}
+                </button>
+              </div>
+              <p className="helper-text">
+                Carbs provide energy for daily activities
+              </p>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="fatsGrams">Fats (g)</label>
+              <div className="input-with-skip">
+                <input
+                  type="number"
+                  id="fatsGrams"
+                  name="fatsGrams"
+                  value={
+                    preferences.fatsGrams === undefined
+                      ? ""
+                      : preferences.fatsGrams
+                  }
+                  onChange={handleInputChange}
+                  min="0"
+                  required={!skippedMacros.fats}
+                  placeholder={
+                    preferences.targetCalories && !skippedMacros.fats
+                      ? `Recommended: ${recommendedMacros.fats}g`
+                      : "Enter fats in grams"
+                  }
+                  className={`${
+                    skippedMacros.fats ? "skipped" : ""
+                  } field-complete ${validFields.fatsGrams ? "valid" : ""}`}
+                  disabled={skippedMacros.fats}
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSkipMacro("fats")}
+                  className={`skip-button ${
+                    skippedMacros.fats ? "skipped" : ""
+                  }`}
+                >
+                  {skippedMacros.fats ? "Skipped" : "Skip"}
+                </button>
+              </div>
+              <p className="helper-text">
+                Healthy fats support hormone production and nutrient absorption
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="fatsGrams">Fats (g)</label>
-          <div className="input-with-skip">
+        <div className="form-section">
+          <div className="form-section-header">
+            <h2 className="form-section-title">Dietary Restrictions</h2>
+            <p className="form-section-subtitle">
+              Specify any food allergies or dietary restrictions
+            </p>
+          </div>
+          <div className="form-group">
+            <label htmlFor="allergies">
+              Food Allergies (leave blank if none)
+            </label>
             <input
-              type="number"
-              id="fatsGrams"
-              name="fatsGrams"
-              value={
-                preferences.fatsGrams === undefined ? "" : preferences.fatsGrams
-              }
-              onChange={handleInputChange}
-              min="0"
-              required={!skippedMacros.fats}
-              placeholder={
-                preferences.targetCalories && !skippedMacros.fats
-                  ? `Recommended: ${recommendedMacros.fats}g`
-                  : "Enter fats in grams"
-              }
-              className={skippedMacros.fats ? "skipped" : ""}
-              disabled={skippedMacros.fats}
+              type="text"
+              id="allergies"
+              name="allergies"
+              value={preferences.allergies.join(", ")}
+              onChange={handleAllergiesChange}
+              placeholder="e.g., peanuts, shellfish, dairy"
             />
-            <button
-              type="button"
-              onClick={() => handleSkipMacro("fats")}
-              className={`skip-button ${skippedMacros.fats ? "skipped" : ""}`}
-            >
-              {skippedMacros.fats ? "Skipped" : "Skip"}
-            </button>
+            <p className="helper-text">
+              We'll avoid recommending foods that contain these ingredients
+            </p>
           </div>
         </div>
 
-        <div className="form-group">
-          <label htmlFor="allergies">
-            Food Allergies (leave blank if none)
-          </label>
-          <input
-            type="text"
-            id="allergies"
-            name="allergies"
-            value={preferences.allergies.join(", ")}
-            onChange={handleAllergiesChange}
-            placeholder="e.g., peanuts, shellfish, dairy"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="zipCode">ZIP Code</label>
-          <input
-            type="text"
-            id="zipCode"
-            name="zipCode"
-            value={preferences.zipCode}
-            onChange={handleInputChange}
-            pattern="[0-9]{5}"
-            required
-            placeholder="e.g., 46556"
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="cuisine">Preferred Cuisines</label>
-          <div className="cuisine-select-container">
-            <div className="selected-cuisines">
-              {preferences.cuisines.map((cuisine) => (
-                <div key={cuisine} className="cuisine-tag">
-                  {CUISINE_OPTIONS.find((opt) => opt.value === cuisine)?.label}
-                  {cuisine !== "None" && (
-                    <button
-                      type="button"
-                      onClick={() => removeCuisine(cuisine)}
-                      className="remove-cuisine"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-            <select
-              id="cuisine"
-              name="cuisine"
-              onChange={handleCuisineChange}
-              value=""
-              className="cuisine-select"
-            >
-              <option value="">Add a cuisine...</option>
-              {CUISINE_OPTIONS.filter(
-                (option) =>
-                  !preferences.cuisines.includes(option.value) ||
-                  option.value === "None"
-              ).map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+        <div className="form-section">
+          <div className="form-section-header">
+            <h2 className="form-section-title">Location & Preferences</h2>
+            <p className="form-section-subtitle">
+              Set your location and food preferences
+            </p>
           </div>
-        </div>
+          <div className="form-group">
+            <label htmlFor="zipCode">ZIP Code</label>
+            <input
+              type="text"
+              id="zipCode"
+              name="zipCode"
+              value={preferences.zipCode}
+              onChange={handleInputChange}
+              pattern="[0-9]{5}"
+              required
+              placeholder="e.g., 46556"
+              className={`field-complete ${validFields.zipCode ? "valid" : ""}`}
+            />
+            <p className="helper-text">
+              We'll use this to find local restaurant options near you
+            </p>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="priceRange">Price Range ($)</label>
-          <div className="price-range-container">
-            <div className="price-range-inputs">
-              <input
-                type="number"
-                id="minPrice"
-                name="minPrice"
-                value={preferences.minPrice}
-                onChange={handlePriceChange}
-                min="1"
-                max="49"
-                className="price-input"
-              />
-              <span>to</span>
-              <input
-                type="number"
-                id="maxPrice"
-                name="maxPrice"
-                value={preferences.maxPrice}
-                onChange={handlePriceChange}
-                min="2"
-                max="50"
-                className="price-input"
-              />
+          <div className="form-group">
+            <label htmlFor="cuisine">Preferred Cuisines</label>
+            <div className="cuisine-select-container">
+              <div className="selected-cuisines">
+                {preferences.cuisines.map((cuisine) => (
+                  <div key={cuisine} className="cuisine-tag">
+                    {
+                      CUISINE_OPTIONS.find((opt) => opt.value === cuisine)
+                        ?.label
+                    }
+                    {cuisine !== "None" && (
+                      <button
+                        type="button"
+                        onClick={() => removeCuisine(cuisine)}
+                        className="remove-cuisine"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <select
+                id="cuisine"
+                name="cuisine"
+                onChange={handleCuisineChange}
+                value=""
+                className="cuisine-select"
+              >
+                <option value="">Add a cuisine...</option>
+                {CUISINE_OPTIONS.filter(
+                  (option) =>
+                    !preferences.cuisines.includes(option.value) ||
+                    option.value === "None"
+                ).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div
-              className="price-range-slider-container"
-              onMouseMove={handleSliderMouseMove}
-            >
-              <div className="slider-track"></div>
-              <div className="slider-range"></div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="priceRange">Price Range ($)</label>
+            <div className="price-range-container">
+              <div className="price-range-inputs">
+                <input
+                  type="number"
+                  id="minPrice"
+                  name="minPrice"
+                  value={preferences.minPrice}
+                  onChange={handlePriceChange}
+                  min="1"
+                  max="49"
+                  className="price-input"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  id="maxPrice"
+                  name="maxPrice"
+                  value={preferences.maxPrice}
+                  onChange={handlePriceChange}
+                  min="2"
+                  max="50"
+                  className="price-input"
+                />
+              </div>
               <div
-                className="slider-handle min-handle"
-                onMouseDown={handleSliderMouseDown("min")}
-              ></div>
-              <div
-                className="slider-handle max-handle"
-                onMouseDown={handleSliderMouseDown("max")}
-              ></div>
-            </div>
-            <div className="price-range-labels">
-              <span>1</span>
-              <span>50</span>
+                className="price-range-slider-container"
+                onMouseMove={handleSliderMouseMove}
+              >
+                <div className="slider-track"></div>
+                <div className="slider-range"></div>
+                <div
+                  className="slider-handle min-handle"
+                  onMouseDown={handleSliderMouseDown("min")}
+                ></div>
+                <div
+                  className="slider-handle max-handle"
+                  onMouseDown={handleSliderMouseDown("max")}
+                ></div>
+              </div>
+              <div className="price-range-labels">
+                <span>1</span>
+                <span>50</span>
+              </div>
             </div>
           </div>
         </div>

@@ -1,40 +1,35 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root {
-  /* Professional Health & Wellness Color Palette */
-  --primary-teal: #00b4d8;
-  --primary-teal-dark: #0096c7;
-  --primary-teal-light: #48cae4;
-  --primary-teal-alpha: rgba(0, 180, 216, 0.1);
-  --primary-teal-glow: rgba(0, 180, 216, 0.15);
-
-  /* Supporting Colors */
-  --accent-mint: #4ecdc4;
-  --accent-mint-light: #81e6d9;
-  --accent-mint-alpha: rgba(78, 205, 196, 0.1);
+  /* Brand Colors */
+  --primary-green: #10b981;
+  --primary-green-dark: #059669;
+  --primary-green-light: #34d399;
+  --primary-green-alpha: rgba(16, 185, 129, 0.1);
+  --primary-green-glow: rgba(16, 185, 129, 0.15);
 
   /* Surface Colors */
   --surface-0: #ffffff;
-  --surface-1: #f8f9fa;
-  --surface-2: #e9ecef;
-  --surface-3: #dee2e6;
-  --surface-4: #ced4da;
+  --surface-1: #f8fafc;
+  --surface-2: #f1f5f9;
+  --surface-3: #e2e8f0;
+  --surface-4: #cbd5e1;
 
   /* Text Colors */
-  --text-primary: #212529;
-  --text-secondary: #495057;
-  --text-tertiary: #6c757d;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
 
   /* Border Colors */
   --border-light: rgba(0, 0, 0, 0.06);
   --border-medium: rgba(0, 0, 0, 0.1);
-  --border-focus: rgba(0, 180, 216, 0.5);
+  --border-focus: rgba(16, 185, 129, 0.5);
 
   /* Enhanced Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
-  --shadow-glow: 0 0 20px var(--primary-teal-glow);
+  --shadow-glow: 0 0 20px var(--primary-green-glow);
 
   /* Spacing */
   --space-2xs: 0.25rem;
@@ -60,7 +55,7 @@
 }
 
 body {
-  font-family: "Plus Jakarta Sans", -apple-system, system-ui, sans-serif;
+  font-family: "Inter", -apple-system, system-ui, sans-serif;
   background-color: var(--surface-0);
   color: var(--text-primary);
   line-height: 1.6;
@@ -92,7 +87,7 @@ body {
   height: 200%;
   background: radial-gradient(
     circle at center,
-    var(--primary-teal-alpha) 0%,
+    var(--primary-green-alpha) 0%,
     transparent 70%
   );
   opacity: 0.4;
@@ -110,7 +105,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--primary-teal-alpha) 50%,
+    var(--primary-green-alpha) 50%,
     transparent 100%
   );
 }
@@ -120,9 +115,9 @@ body {
   font-weight: 700;
   background: linear-gradient(
     135deg,
-    var(--primary-teal-light) 0%,
-    var(--primary-teal) 50%,
-    var(--primary-teal-dark) 100%
+    var(--primary-green-light) 0%,
+    var(--primary-green) 50%,
+    var(--primary-green-dark) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -181,16 +176,16 @@ select {
 
 input:hover,
 select:hover {
-  border-color: var(--primary-teal);
+  border-color: var(--primary-green);
   background: #ffffff;
 }
 
 input:focus,
 select:focus {
   outline: none;
-  border-color: var(--primary-teal);
+  border-color: var(--primary-green);
   background: #ffffff;
-  box-shadow: 0 0 0 3px var(--primary-teal-alpha),
+  box-shadow: 0 0 0 3px var(--primary-green-alpha),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -226,8 +221,8 @@ input.skipped:focus {
 .skip-button {
   padding: var(--space-md) var(--space-lg);
   background: #ffffff;
-  border: 1px solid var(--primary-teal);
-  color: var(--primary-teal);
+  border: 1px solid var(--primary-green);
+  color: var(--primary-green);
   border-radius: var(--radius-lg);
   font-weight: 600;
   cursor: pointer;
@@ -238,19 +233,19 @@ input.skipped:focus {
 }
 
 .skip-button:hover {
-  background: var(--primary-teal-alpha);
+  background: var(--primary-green-alpha);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
 .skip-button.skipped {
-  background: var(--primary-teal);
+  background: var(--primary-green);
   color: #ffffff;
   box-shadow: var(--shadow-sm);
 }
 
 .skip-button.skipped:hover {
-  background: var(--primary-teal-dark);
+  background: var(--primary-green-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -284,8 +279,8 @@ input.skipped:focus {
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-sm);
-  background: var(--primary-teal-alpha);
-  color: var(--primary-teal-light);
+  background: var(--primary-green-alpha);
+  color: var(--primary-green-light);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
@@ -300,7 +295,7 @@ input.skipped:focus {
 .remove-cuisine {
   background: none;
   border: none;
-  color: var(--primary-teal-light);
+  color: var(--primary-green-light);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -321,7 +316,7 @@ input.skipped:focus {
 .submit-button {
   width: 100%;
   padding: var(--space-md) var(--space-xl);
-  background: var(--primary-teal);
+  background: var(--primary-green);
   color: white;
   border: none;
   border-radius: var(--radius-lg);
@@ -336,7 +331,7 @@ input.skipped:focus {
 }
 
 .submit-button:hover {
-  background: var(--primary-teal-dark);
+  background: var(--primary-green-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
