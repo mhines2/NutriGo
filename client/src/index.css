@@ -1,32 +1,40 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 
 :root {
-  /* Enhanced Color Palette */
-  --primary-green: #00e676;
-  --primary-green-dark: #00c853;
-  --primary-green-light: #69f0ae;
-  --primary-green-alpha: rgba(0, 230, 118, 0.1);
-  --primary-green-glow: rgba(0, 230, 118, 0.15);
+  /* Professional Health & Wellness Color Palette */
+  --primary-teal: #00b4d8;
+  --primary-teal-dark: #0096c7;
+  --primary-teal-light: #48cae4;
+  --primary-teal-alpha: rgba(0, 180, 216, 0.1);
+  --primary-teal-glow: rgba(0, 180, 216, 0.15);
 
-  --surface-0: #0a0a0b;
-  --surface-1: #121214;
-  --surface-2: #18181b;
-  --surface-3: #1f1f23;
-  --surface-4: #27272c;
+  /* Supporting Colors */
+  --accent-mint: #4ecdc4;
+  --accent-mint-light: #81e6d9;
+  --accent-mint-alpha: rgba(78, 205, 196, 0.1);
 
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
+  /* Surface Colors */
+  --surface-0: #ffffff;
+  --surface-1: #f8f9fa;
+  --surface-2: #e9ecef;
+  --surface-3: #dee2e6;
+  --surface-4: #ced4da;
 
-  --border-light: rgba(255, 255, 255, 0.06);
-  --border-medium: rgba(255, 255, 255, 0.1);
-  --border-focus: rgba(0, 230, 118, 0.5);
+  /* Text Colors */
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-tertiary: #6c757d;
+
+  /* Border Colors */
+  --border-light: rgba(0, 0, 0, 0.06);
+  --border-medium: rgba(0, 0, 0, 0.1);
+  --border-focus: rgba(0, 180, 216, 0.5);
 
   /* Enhanced Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.24);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.32);
-  --shadow-glow: 0 0 20px var(--primary-green-glow);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+  --shadow-glow: 0 0 20px var(--primary-teal-glow);
 
   /* Spacing */
   --space-2xs: 0.25rem;
@@ -68,7 +76,7 @@ body {
 }
 
 .header {
-  background: linear-gradient(to bottom, var(--surface-2), var(--surface-1));
+  background: linear-gradient(to bottom, var(--surface-1), var(--surface-0));
   padding: var(--space-2xl) 0;
   position: relative;
   overflow: hidden;
@@ -84,7 +92,7 @@ body {
   height: 200%;
   background: radial-gradient(
     circle at center,
-    var(--primary-green-alpha) 0%,
+    var(--primary-teal-alpha) 0%,
     transparent 70%
   );
   opacity: 0.4;
@@ -102,7 +110,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    var(--primary-green-alpha) 50%,
+    var(--primary-teal-alpha) 50%,
     transparent 100%
   );
 }
@@ -112,9 +120,9 @@ body {
   font-weight: 700;
   background: linear-gradient(
     135deg,
-    var(--primary-green-light) 0%,
-    var(--primary-green) 50%,
-    var(--primary-green-dark) 100%
+    var(--primary-teal-light) 0%,
+    var(--primary-teal) 50%,
+    var(--primary-teal-dark) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -173,16 +181,16 @@ select {
 
 input:hover,
 select:hover {
-  border-color: var(--primary-green);
+  border-color: var(--primary-teal);
   background: #ffffff;
 }
 
 input:focus,
 select:focus {
   outline: none;
-  border-color: var(--primary-green);
+  border-color: var(--primary-teal);
   background: #ffffff;
-  box-shadow: 0 0 0 3px var(--primary-green-alpha),
+  box-shadow: 0 0 0 3px var(--primary-teal-alpha),
     inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
@@ -218,8 +226,8 @@ input.skipped:focus {
 .skip-button {
   padding: var(--space-md) var(--space-lg);
   background: #ffffff;
-  border: 1px solid var(--primary-green);
-  color: var(--primary-green);
+  border: 1px solid var(--primary-teal);
+  color: var(--primary-teal);
   border-radius: var(--radius-lg);
   font-weight: 600;
   cursor: pointer;
@@ -230,19 +238,19 @@ input.skipped:focus {
 }
 
 .skip-button:hover {
-  background: var(--primary-green-alpha);
+  background: var(--primary-teal-alpha);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
 .skip-button.skipped {
-  background: var(--primary-green);
+  background: var(--primary-teal);
   color: #ffffff;
   box-shadow: var(--shadow-sm);
 }
 
 .skip-button.skipped:hover {
-  background: var(--primary-green-dark);
+  background: var(--primary-teal-dark);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
@@ -276,8 +284,8 @@ input.skipped:focus {
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-sm);
-  background: var(--primary-green-alpha);
-  color: var(--primary-green-light);
+  background: var(--primary-teal-alpha);
+  color: var(--primary-teal-light);
   border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
@@ -292,7 +300,7 @@ input.skipped:focus {
 .remove-cuisine {
   background: none;
   border: none;
-  color: var(--primary-green-light);
+  color: var(--primary-teal-light);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -312,43 +320,25 @@ input.skipped:focus {
 /* Submit Button */
 .submit-button {
   width: 100%;
-  padding: var(--space-lg);
-  background: linear-gradient(
-    135deg,
-    var(--primary-green) 0%,
-    var(--primary-green-dark) 100%
-  );
-  color: var(--surface-0);
+  padding: var(--space-md) var(--space-xl);
+  background: var(--primary-teal);
+  color: white;
   border: none;
   border-radius: var(--radius-lg);
   font-weight: 600;
-  font-size: 1.125rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: var(--space-2xl);
   position: relative;
   overflow: hidden;
-}
-
-.submit-button::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(rgba(255, 255, 255, 0.1), transparent);
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
 .submit-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-}
-
-.submit-button:hover::before {
-  opacity: 1;
+  background: var(--primary-teal-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .submit-button:disabled {

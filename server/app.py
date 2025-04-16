@@ -7,9 +7,96 @@ import openai
 import googlemaps
 import requests
 from datetime import datetime
+import shutil
+from termcolor import colored
 
 # Load environment variables
 dotenv.load_dotenv(override=True)
+
+# Create logs directory if it doesn't exist
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+def format_json(data):
+    """Format JSON data with proper indentation and sorting"""
+    if isinstance(data, str):
+        try:
+            data = json.loads(data)
+        except json.JSONDecodeError:
+            return {"raw_text": data}
+    return data
+
+def log_to_file(data, prefix='request', timestamp=None):
+    """Write JSON data to a log file with timestamp and pretty formatting"""
+    if timestamp is None:
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    
+    # Create a session directory for related logs
+    session_dir = f"logs/session_{timestamp}"
+    if not os.path.exists(session_dir):
+        os.makedirs(session_dir)
+    
+    # Create a filename with timestamp
+    filename = f"{session_dir}/{prefix}.json"
+    
+    try:
+        # Format the data
+        formatted_data = format_json(data)
+        
+        # Add metadata to the log
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "type": prefix,
+            "data": formatted_data
+        }
+        
+        # Write to file with pretty printing
+        with open(filename, 'w') as f:
+            json.dump(log_entry, f, indent=2, sort_keys=True)
+        
+        # Create a human-readable summary
+        summary_file = f"{session_dir}/summary.txt"
+        with open(summary_file, 'a') as f:
+            f.write(f"\n{'='*50}\n")
+            f.write(f"Log Entry: {prefix}\n")
+            f.write(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"{'='*50}\n")
+            
+            if prefix == 'request':
+                prefs = formatted_data.get('preferences', {})
+                f.write("User Preferences:\n")
+                f.write(f"- Calories: {prefs.get('calorie_count')} kcal\n")
+                f.write(f"- Protein: {prefs.get('macronutrients', {}).get('protein_grams')}g\n")
+                f.write(f"- Price Range: ${prefs.get('price_range', [0,0])[0]} - ${prefs.get('price_range', [0,0])[1]}\n")
+            
+            elif prefix == 'restaurants':
+                if isinstance(formatted_data, list):
+                    f.write(f"Found {len(formatted_data)} restaurants\n")
+                    for restaurant in formatted_data[:5]:  # Show first 5
+                        f.write(f"- {restaurant.get('name', 'Unknown')}\n")
+                    if len(formatted_data) > 5:
+                        f.write(f"  ... and {len(formatted_data) - 5} more\n")
+            
+            elif prefix == 'final_recommendations':
+                recs = formatted_data.get('recommendations', [])
+                f.write(f"Generated {len(recs)} recommendations\n")
+                for idx, rec in enumerate(recs, 1):
+                    f.write(f"\n{idx}. {rec.get('restaurant_name')}\n")
+                    f.write(f"   Dish: {rec.get('dish_name')}\n")
+                    f.write(f"   Calories: {rec.get('calories')} kcal\n")
+                    f.write(f"   Price: ${rec.get('price_range')}\n")
+            
+            f.write("\n")
+        
+        print(colored(f"Logged {prefix} to {filename}", 'green'))
+        
+    except Exception as e:
+        error_msg = f"Error logging to file: {str(e)}"
+        print(colored(error_msg, 'red'))
+        
+        # Log the error
+        with open(f"{session_dir}/errors.txt", 'a') as f:
+            f.write(f"{datetime.now().isoformat()}: {error_msg}\n")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -289,20 +376,21 @@ def validate_recommendations(recommendations_data, preferences):
     
     def get_missing_targets(calories, protein, carbs, fats, price):
         missing = []
+        required_missing = []  # New list for required targets (calories and price)
         
         # Check calories - required target
         if not is_within_range(calories, target_calories):
             if calories < float(target_calories) * 0.85:
-                missing.append(f"Low calories: {calories} (target: {target_calories})")
+                required_missing.append(f"Low calories: {calories} (target: {target_calories})")
             else:
-                missing.append(f"High calories: {calories} (target: {target_calories})")
+                required_missing.append(f"High calories: {calories} (target: {target_calories})")
         
         # Check price - required target
         if not is_within_range(price, None, 'price'):
             if price < min_price:
-                missing.append(f"Price too low: ${price} (min: ${min_price})")
+                required_missing.append(f"Price too low: ${price} (min: ${min_price})")
             else:
-                missing.append(f"Price too high: ${price} (max: ${max_price})")
+                required_missing.append(f"Price too high: ${price} (max: ${max_price})")
         
         # Check macros - optional targets
         if not is_within_range(protein, target_protein, 'macro'):
@@ -323,7 +411,7 @@ def validate_recommendations(recommendations_data, preferences):
             else:
                 missing.append(f"High fats: {fats}g (target: {target_fats}g)")
         
-        return missing
+        return missing, required_missing
     
     enhanced_recommendations = []
     seen_restaurants = set()
@@ -339,21 +427,21 @@ def validate_recommendations(recommendations_data, preferences):
             restaurant_name = rec.get('restaurant_name', '')
             
             # Get list of missing targets
-            missing_targets = get_missing_targets(calories, protein, carbs, fats, price)
+            missing_targets, required_missing = get_missing_targets(calories, protein, carbs, fats, price)
             
-            # Skip recommendations that don't meet calorie or price targets
-            if any(("calories" in target.lower() or "price" in target.lower()) for target in missing_targets):
-                print(f"Skipping {restaurant_name} due to missing required targets: calories or price")
+            # Skip recommendations that don't meet required targets (calories or price)
+            if required_missing:
+                print(f"Skipping {restaurant_name} due to missing required targets: {', '.join(required_missing)}")
                 continue
             
             # Add missing targets to the recommendation
             enhanced_rec = {
                 **rec,
-                "missing_targets": missing_targets,
+                "missing_targets": missing_targets,  # Only includes macro targets
                 "matches_all_targets": len(missing_targets) == 0
             }
             
-            # Add suggestions for missing targets
+            # Add suggestions for missing macro targets
             if missing_targets:
                 suggestions = []
                 if any("Low carbs" in m for m in missing_targets):
@@ -369,7 +457,7 @@ def validate_recommendations(recommendations_data, preferences):
                 enhanced_recommendations.append(enhanced_rec)
                 seen_restaurants.add(restaurant_name)
                 
-            print(f"Processed {restaurant_name}: {len(missing_targets)} missing targets")
+            print(f"Processed {restaurant_name}: {len(missing_targets)} missing macro targets")
             
         except Exception as e:
             print(f"Error processing recommendation: {str(e)}")
@@ -404,6 +492,7 @@ def get_recommendations():
     """Get restaurant recommendations based on user preferences"""
     try:
         print("\n=== New Recommendation Request ===")
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         print("Request received at:", datetime.now())
         
         if not request.is_json:
@@ -415,6 +504,8 @@ def get_recommendations():
             return jsonify({'error': 'OpenAI API is not available'}), 503
         
         data = request.json
+        # Log the incoming request
+        log_to_file(data, 'request', timestamp)
         print("Received data:", json.dumps(data, indent=2))
         
         if not data or 'preferences' not in data:
@@ -432,10 +523,14 @@ def get_recommendations():
         
         # Get restaurants
         restaurants = get_restaurants_by_zipcode(zipcode)
+        # Log the restaurants data
+        log_to_file(restaurants, 'restaurants', timestamp)
         print(f"Found {len(restaurants)} restaurants")
         
         # Create RAG prompt with restaurant data
         rag_prompt = create_rag_prompt(restaurants, preferences)
+        # Log the RAG prompt
+        log_to_file({"prompt": rag_prompt}, 'prompt', timestamp)
         print("Generated RAG prompt")
         
         try:
@@ -453,6 +548,8 @@ def get_recommendations():
             
             # Get the response text
             response_text = completion.choices[0].message.content
+            # Log the raw OpenAI response
+            log_to_file({"raw_response": response_text}, 'openai_response', timestamp)
             print("OpenAI API response received")
             print("Response:", response_text)
             
@@ -462,6 +559,8 @@ def get_recommendations():
                 print("Successfully parsed OpenAI response as JSON")
                 
                 valid_recommendations = validate_recommendations(recommendations_data, preferences)
+                # Log the validated recommendations
+                log_to_file({"recommendations": valid_recommendations}, 'final_recommendations', timestamp)
                 print(f"Found {len(valid_recommendations)} valid recommendations")
                 
                 if not valid_recommendations:
@@ -477,24 +576,31 @@ def get_recommendations():
             except json.JSONDecodeError as e:
                 print(f"Error parsing OpenAI response as JSON: {e}")
                 print("Response text:", response_text)
-                return jsonify({
+                error_response = {
                     "error": "Failed to parse recommendations",
-                    "recommendations": []
-                }), 200
+                    "recommendations": [],
+                    "raw_response": response_text
+                }
+                log_to_file(error_response, 'error', timestamp)
+                return jsonify(error_response), 200
                 
         except Exception as e:
             print(f"Error calling OpenAI API: {e}")
-            return jsonify({
+            error_response = {
                 'error': f'Error generating recommendations: {str(e)}',
                 'recommendations': []
-            }), 200
+            }
+            log_to_file(error_response, 'error', timestamp)
+            return jsonify(error_response), 200
             
     except Exception as e:
         print(f"Error in recommendations endpoint: {e}")
-        return jsonify({
+        error_response = {
             'error': f'Server error: {str(e)}',
             'recommendations': []
-        }), 200
+        }
+        log_to_file(error_response, 'error', timestamp)
+        return jsonify(error_response), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True) 
