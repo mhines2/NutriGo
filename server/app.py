@@ -496,7 +496,5 @@ def get_recommendations():
             'recommendations': []
         }), 200
 
-if __name__ == "__main__":
-    print("\n=== Starting NutriGo Server ===")
-    print("Server will be available at: http://localhost:5001")
-    app.run(debug=True, port=5001) 
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5001, debug=True) 
