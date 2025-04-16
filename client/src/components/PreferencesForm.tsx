@@ -3,6 +3,7 @@ import { PreferencesContext } from "../context/PreferencesContext";
 import { getRecommendations } from "../services/api";
 import LoadingSpinner from "./LoadingSpinner";
 import "./PreferencesForm.css";
+import RestaurantMap from "./RestaurantMap";
 
 const CUISINE_OPTIONS = [
   { value: "None", label: "None" },
@@ -587,48 +588,54 @@ const PreferencesForm: React.FC = () => {
               }`}
             >
               <h3>{rec.restaurant_name}</h3>
-              <p>{rec.address}</p>
-              <p>
-                <strong>Recommended Dish:</strong> {rec.dish_name}
-              </p>
-              <p>
-                <strong>Calories:</strong> {rec.calories}
-              </p>
-              <p>
-                <strong>Macros:</strong> Protein: {rec.macronutrients.protein}g,
-                Carbs: {rec.macronutrients.carbs}g, Fats:{" "}
-                {rec.macronutrients.fats}g
-              </p>
-              <p>
-                <strong>Price:</strong> ${rec.price_range}
-              </p>
-              <p>
-                <strong>Why:</strong> {rec.reason}
-              </p>
-              {rec.missing_targets && rec.missing_targets.length > 0 && (
-                <div className="missing-targets">
-                  <p>
-                    <strong>Missing Targets:</strong>
-                  </p>
-                  <ul>
-                    {rec.missing_targets.map((target: string, i: number) => (
-                      <li key={i}>{target}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {rec.suggestions && rec.suggestions.length > 0 && (
-                <div className="suggestions">
-                  <p>
-                    <strong>Suggestions to Meet Targets:</strong>
-                  </p>
-                  <ul>
-                    {rec.suggestions.map((suggestion: string, i: number) => (
-                      <li key={i}>{suggestion}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <p className="restaurant-address">{rec.address}</p>
+              <RestaurantMap
+                address={rec.address}
+                restaurantName={rec.restaurant_name}
+              />
+              <div className="recommendation-details">
+                <p>
+                  <strong>Recommended Dish:</strong> {rec.dish_name}
+                </p>
+                <p>
+                  <strong>Calories:</strong> {rec.calories}
+                </p>
+                <p>
+                  <strong>Macros:</strong> Protein: {rec.macronutrients.protein}
+                  g, Carbs: {rec.macronutrients.carbs}g, Fats:{" "}
+                  {rec.macronutrients.fats}g
+                </p>
+                <p>
+                  <strong>Price:</strong> ${rec.price_range}
+                </p>
+                <p>
+                  <strong>Why:</strong> {rec.reason}
+                </p>
+                {rec.missing_targets && rec.missing_targets.length > 0 && (
+                  <div className="missing-targets">
+                    <p>
+                      <strong>Missing Targets:</strong>
+                    </p>
+                    <ul>
+                      {rec.missing_targets.map((target: string, i: number) => (
+                        <li key={i}>{target}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {rec.suggestions && rec.suggestions.length > 0 && (
+                  <div className="suggestions">
+                    <p>
+                      <strong>Suggestions to Meet Targets:</strong>
+                    </p>
+                    <ul>
+                      {rec.suggestions.map((suggestion: string, i: number) => (
+                        <li key={i}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
