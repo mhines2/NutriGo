@@ -1,73 +1,140 @@
-# NutriGo - AI Dining Assistant 🍽️🤖
+# NutriGo - AI-Powered Dining Assistant 🍽️
 
-NutriGo is an AI-powered dining assistant that helps nutrition-conscious users discover nearby restaurants aligned with their dietary goals and preferences. The application uses OpenAI's GPT-4 model to provide personalized restaurant recommendations and engage in helpful conversations about nutrition and dining choices.
+NutriGo helps nutrition-conscious users discover nearby restaurants that align with their dietary goals and preferences. Using OpenAI's GPT models and Google Maps, it provides personalized restaurant recommendations with detailed nutritional information.
 
-## Features
+## Features 🌟
 
-1. **Personalized Restaurant Discovery**:
+### Core Features
 
-   - Input your dietary restrictions, allergies, and cuisine preferences
-   - Get restaurant recommendations based on your preferences
-   - Filter by price range and distance
+- **Smart Restaurant Discovery**: Find restaurants based on location and dietary preferences
+- **Nutritional Analysis**: Get detailed macro breakdowns for recommended meals
+- **Personalized Recommendations**: Tailored suggestions based on:
+  - Calorie goals
+  - Macronutrient targets
+  - Price range
+  - Dietary restrictions
+  - Cuisine preferences
 
-2. **Interactive Chat Interface**:
+### Technical Features
 
-   - Chat with the AI assistant about restaurants and dietary advice
-   - Ask follow-up questions about specific restaurants
-   - Get nutritional information and recommendations
+- **Real-time API Integration**: OpenAI GPT-3.5 & Google Maps
+- **Detailed Logging System**: Session-based logging for debugging
+- **Modern React Frontend**: Clean, responsive UI with TypeScript
+- **RESTful Flask Backend**: Robust Python backend with error handling
 
-3. **Dietary Preference Management**:
-   - Set multiple dietary restrictions (Vegetarian, Vegan, Gluten-Free, etc.)
-   - Specify food allergies
-   - Choose preferred cuisines
-   - Set price range preferences
+## Setup 🚀
 
-## Setup Instructions
+### Prerequisites
 
-1. Clone this repository:
+- Node.js (v16+)
+- Python 3.8+
+- API Keys:
+  - OpenAI API Key
+  - Google Maps API Key
+
+### Backend Setup
+
+1. Navigate to server directory:
 
    ```bash
-   git clone <repository-url>
-   cd NutriGo
+   cd server
    ```
 
-2. Install dependencies:
+2. Create and activate virtual environment:
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. Install dependencies:
 
    ```bash
    pip install -r requirements.txt
    ```
 
-3. Create a `.env` file in the root directory with your API keys:
+4. Create `.env` file:
 
-   ```plaintext
+   ```env
    OPENAI_API_KEY=your_openai_api_key
    GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   FLASK_ENV=development
    ```
 
-4. Run the application:
+5. Run the server:
+   ```bash
+   python app.py
+   ```
+   Server will run on http://localhost:5001
+
+### Frontend Setup
+
+1. Navigate to client directory:
 
    ```bash
-   streamlit run nutrigo_app.py
+   cd client
    ```
 
-5. Open your browser and navigate to http://localhost:8501
+2. Install dependencies:
 
-## Required API Keys
+   ```bash
+   npm install
+   ```
 
-- **OpenAI API Key**: Required for the AI chat functionality
-- **Google Maps API Key**: Required for restaurant location services
+3. Start development server:
+   ```bash
+   npm start
+   ```
+   Client will run on http://localhost:3000
 
-## Technologies Used
+## Development 🛠️
 
-- **Streamlit**: For the web interface
-- **OpenAI GPT-4**: For AI-powered conversations and recommendations
-- **Google Maps API**: For restaurant location and search functionality
-- **Python**: Core programming language
+### Project Structure
 
-## Contributing
+```
+nutrigo/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── context/      # React context
+│   │   └── services/     # API services
+│   └── package.json
+└── server/                # Flask backend
+    ├── app.py            # Main server file
+    ├── requirements.txt  # Python dependencies
+    └── logs/            # Debug logs
+```
 
-Feel free to submit issues and enhancement requests!
+### Debugging
 
-## License
+- Check `server/logs/session_[timestamp]/` for detailed request logs
+- Each session includes:
+  - `summary.txt`: Human-readable overview
+  - `request.json`: Initial request
+  - `restaurants.json`: Found restaurants
+  - `final_recommendations.json`: Generated recommendations
+  - `errors.txt`: Any errors encountered
+
+### API Endpoints
+
+- `GET /api/status`: Check API health
+- `GET /api/restaurants`: Get restaurants by ZIP code
+- `POST /api/recommendations`: Get personalized recommendations
+
+## Contributing 🤝
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
+
+## License 📄
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments 🙏
+
+- OpenAI GPT API
+- Google Maps Places API
+- React & Flask communities
