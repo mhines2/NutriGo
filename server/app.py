@@ -263,33 +263,48 @@ def validate_recommendations(recommendations_data, preferences):
     target_protein = target_macros.get('protein_grams')
     target_carbs = target_macros.get('carbs_grams')
     target_fats = target_macros.get('fats_grams')
+    price_range = preferences.get('price_range', [10, 25])
+    min_price, max_price = price_range[0], price_range[1]
     
-    def is_within_range(value, target, macro_type=None):
+    def is_within_range(value, target, target_type=None):
         if not target or not value:
             return True
         try:
             value = float(value)
             target = float(target)
             
-            if macro_type == 'macro':
+            if target_type == 'macro':
                 lower_bound = target * 0.55
                 upper_bound = target * 1.45
-            else:
-                lower_bound = target * 0.65
-                upper_bound = target * 1.35
+            elif target_type == 'price':
+                # Price must be within the specified range
+                return min_price <= value <= max_price
+            else:  # calories
+                lower_bound = target * 0.85  # Stricter bounds for calories
+                upper_bound = target * 1.15
             
             return lower_bound <= value <= upper_bound
         except (TypeError, ValueError):
             return False
     
-    def get_missing_targets(calories, protein, carbs, fats):
+    def get_missing_targets(calories, protein, carbs, fats, price):
         missing = []
+        
+        # Check calories - required target
         if not is_within_range(calories, target_calories):
-            if calories < float(target_calories) * 0.65:
+            if calories < float(target_calories) * 0.85:
                 missing.append(f"Low calories: {calories} (target: {target_calories})")
             else:
                 missing.append(f"High calories: {calories} (target: {target_calories})")
         
+        # Check price - required target
+        if not is_within_range(price, None, 'price'):
+            if price < min_price:
+                missing.append(f"Price too low: ${price} (min: ${min_price})")
+            else:
+                missing.append(f"Price too high: ${price} (max: ${max_price})")
+        
+        # Check macros - optional targets
         if not is_within_range(protein, target_protein, 'macro'):
             if protein < float(target_protein) * 0.55:
                 missing.append(f"Low protein: {protein}g (target: {target_protein}g)")
@@ -316,6 +331,7 @@ def validate_recommendations(recommendations_data, preferences):
     for rec in recommendations:
         try:
             calories = rec.get('calories', 0)
+            price = rec.get('price_range', 0)
             macros = rec.get('macronutrients', {})
             protein = macros.get('protein', 0)
             carbs = macros.get('carbs', 0)
@@ -323,7 +339,12 @@ def validate_recommendations(recommendations_data, preferences):
             restaurant_name = rec.get('restaurant_name', '')
             
             # Get list of missing targets
-            missing_targets = get_missing_targets(calories, protein, carbs, fats)
+            missing_targets = get_missing_targets(calories, protein, carbs, fats, price)
+            
+            # Skip recommendations that don't meet calorie or price targets
+            if any(("calories" in target.lower() or "price" in target.lower()) for target in missing_targets):
+                print(f"Skipping {restaurant_name} due to missing required targets: calories or price")
+                continue
             
             # Add missing targets to the recommendation
             enhanced_rec = {
@@ -341,8 +362,6 @@ def validate_recommendations(recommendations_data, preferences):
                     suggestions.append("Add grilled chicken or a protein shake to increase protein")
                 if any("Low fats" in m for m in missing_targets):
                     suggestions.append("Add avocado, dressing, or nuts to increase fats")
-                if any("Low calories" in m for m in missing_targets):
-                    suggestions.append("Consider adding sides or increasing portion sizes")
                 enhanced_rec["suggestions"] = suggestions
             
             # Only add if we haven't seen this restaurant or if it's a particularly good match

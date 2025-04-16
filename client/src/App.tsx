@@ -6,14 +6,30 @@ import "./App.css";
 const App: React.FC = () => {
   return (
     <PreferencesProvider>
-      <div className="app">
-        <header className="app-header">
-          <h1>NutriGo</h1>
-          <p>Find restaurants that match your dietary preferences</p>
+      <div className="app-container fade-in">
+        <header className="header">
+          <div className="container">
+            <h1>NutriGo</h1>
+            <p>
+              Find restaurants that match your dietary preferences and
+              nutritional goals
+            </p>
+          </div>
         </header>
-        <main>
-          <PreferencesForm />
+
+        <main className="main-content">
+          <div className="container">
+            <PreferencesForm />
+          </div>
         </main>
+
+        <footer className="footer">
+          <div className="container">
+            <p>
+              &copy; {new Date().getFullYear()} NutriGo. All rights reserved.
+            </p>
+          </div>
+        </footer>
       </div>
     </PreferencesProvider>
   );

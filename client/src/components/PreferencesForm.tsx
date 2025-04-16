@@ -273,6 +273,7 @@ const PreferencesForm: React.FC = () => {
                   ? `Recommended: ${recommendedMacros.protein}g`
                   : "Enter protein in grams"
               }
+              className={skippedMacros.protein ? "skipped" : ""}
               disabled={skippedMacros.protein}
             />
             <button
@@ -282,7 +283,7 @@ const PreferencesForm: React.FC = () => {
                 skippedMacros.protein ? "skipped" : ""
               }`}
             >
-              {skippedMacros.protein ? "Specify" : "Skip"}
+              {skippedMacros.protein ? "Skipped" : "Skip"}
             </button>
           </div>
         </div>
@@ -307,6 +308,7 @@ const PreferencesForm: React.FC = () => {
                   ? `Recommended: ${recommendedMacros.carbs}g`
                   : "Enter carbs in grams"
               }
+              className={skippedMacros.carbs ? "skipped" : ""}
               disabled={skippedMacros.carbs}
             />
             <button
@@ -314,7 +316,7 @@ const PreferencesForm: React.FC = () => {
               onClick={() => handleSkipMacro("carbs")}
               className={`skip-button ${skippedMacros.carbs ? "skipped" : ""}`}
             >
-              {skippedMacros.carbs ? "Specify" : "Skip"}
+              {skippedMacros.carbs ? "Skipped" : "Skip"}
             </button>
           </div>
         </div>
@@ -337,6 +339,7 @@ const PreferencesForm: React.FC = () => {
                   ? `Recommended: ${recommendedMacros.fats}g`
                   : "Enter fats in grams"
               }
+              className={skippedMacros.fats ? "skipped" : ""}
               disabled={skippedMacros.fats}
             />
             <button
@@ -344,7 +347,7 @@ const PreferencesForm: React.FC = () => {
               onClick={() => handleSkipMacro("fats")}
               className={`skip-button ${skippedMacros.fats ? "skipped" : ""}`}
             >
-              {skippedMacros.fats ? "Specify" : "Skip"}
+              {skippedMacros.fats ? "Skipped" : "Skip"}
             </button>
           </div>
         </div>
