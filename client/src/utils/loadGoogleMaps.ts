@@ -1,42 +1,43 @@
 declare global {
   interface Window {
+    google: any;
     initMap: () => void;
   }
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
+// Keep track of loading state
+let loadingPromise: Promise<void> | null = null;
+
 export const loadGoogleMaps = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    console.log(
-      "Environment variables available:",
-      Object.keys(process.env).filter((key) => key.startsWith("REACT_APP_"))
-    );
-    console.log(
-      "Attempting to load Google Maps with API key:",
-      GOOGLE_MAPS_API_KEY ? "Key exists" : "No key found"
-    );
+  // If already loaded, return resolved promise
+  if (window.google && window.google.maps) {
+    return Promise.resolve();
+  }
 
-    if (window.google && window.google.maps) {
-      console.log("Google Maps already loaded");
-      resolve();
-      return;
-    }
+  // If currently loading, return the existing promise
+  if (loadingPromise) {
+    return loadingPromise;
+  }
 
+  // Create new loading promise
+  loadingPromise = new Promise((resolve, reject) => {
     if (!GOOGLE_MAPS_API_KEY) {
       console.error("Google Maps API key missing from environment variables");
       reject(new Error("Google Maps API key is not configured"));
       return;
     }
 
-    window.initMap = () => {
-      console.log("Google Maps initialization callback triggered");
+    // Create a unique callback name
+    const callbackName = "initMap_" + Math.random().toString(36).substr(2, 9);
+    (window as any)[callbackName] = () => {
+      delete (window as any)[callbackName];
       resolve();
     };
 
     const script = document.createElement("script");
-    const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initMap`;
-    script.src = scriptUrl;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=${callbackName}`;
     script.async = true;
     script.defer = true;
 
@@ -46,16 +47,15 @@ export const loadGoogleMaps = (): Promise<void> => {
 
     script.onerror = (error) => {
       console.error("Failed to load Google Maps script:", error);
-      console.error(
-        "Attempted script URL:",
-        scriptUrl.replace(GOOGLE_MAPS_API_KEY, "API_KEY_HIDDEN")
-      );
+      loadingPromise = null; // Reset loading promise on error
+      delete (window as any)[callbackName];
       reject(new Error("Failed to load Google Maps script"));
     };
 
     document.head.appendChild(script);
-    console.log("Google Maps script tag added to document");
   });
+
+  return loadingPromise;
 };
 
 export default loadGoogleMaps;

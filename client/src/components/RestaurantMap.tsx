@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { loadGoogleMaps } from "../utils/loadGoogleMaps";
 
 // The API key should be loaded from environment variables
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -7,29 +8,6 @@ interface RestaurantMapProps {
   address: string;
   restaurantName: string;
 }
-
-const loadGoogleMapsScript = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (window.google && window.google.maps) {
-      resolve();
-      return;
-    }
-
-    if (!GOOGLE_MAPS_API_KEY) {
-      reject(new Error("Google Maps API key is not configured"));
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => resolve();
-    script.onerror = () =>
-      reject(new Error("Failed to load Google Maps script"));
-    document.head.appendChild(script);
-  });
-};
 
 const normalizeAddress = (address: string): string => {
   // Remove multiple spaces and normalize separators
@@ -44,10 +22,14 @@ const normalizeAddress = (address: string): string => {
     .replace(/\s*Ave\s*/i, " Avenue ")
     .replace(/\s*Blvd\s*/i, " Boulevard ")
     .replace(/\s*Hwy\s*/i, " Highway ")
+    .replace(/\s*State Hwy\s*/i, " State Highway ")
+    .replace(/\s*Dr\s*/i, " Drive ")
+    .replace(/\s*Ln\s*/i, " Lane ")
+    .replace(/\s*Ct\s*/i, " Court ")
     .trim();
 
   // Ensure USA is not included as it can sometimes confuse the geocoder
-  normalized = normalized.replace(/, USA$/, "");
+  normalized = normalized.replace(/,?\s*USA$/i, "");
 
   return normalized;
 };
@@ -56,7 +38,7 @@ const formatAddress = (address: string): string => {
   const normalizedAddress = normalizeAddress(address);
 
   // Check if the address already contains state and ZIP code
-  const hasStateAndZip = /[A-Z]{2}\s+\d{5}/.test(normalizedAddress);
+  const hasStateAndZip = /[A-Z]{2}\s+\d{5}(-\d{4})?/.test(normalizedAddress);
 
   if (hasStateAndZip) {
     return normalizedAddress;
@@ -85,25 +67,40 @@ const RestaurantMap: React.FC<RestaurantMapProps> = ({
   const markerRef = useRef<google.maps.Marker | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const geocoderRef = useRef<google.maps.Geocoder | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     const initMap = async () => {
       try {
-        await loadGoogleMapsScript();
-        if (!mapRef.current) return;
+        await loadGoogleMaps();
 
-        const geocoder = new google.maps.Geocoder();
+        if (!isMounted || !mapRef.current) return;
+
+        // Initialize geocoder if not already initialized
+        if (!geocoderRef.current) {
+          geocoderRef.current = new window.google.maps.Geocoder();
+        }
+
         const formattedAddress = formatAddress(address);
-
         console.log(`Attempting to geocode address: ${formattedAddress}`);
 
         const attemptGeocoding = (retryCount: number = 0) => {
-          geocoder.geocode(
+          if (!geocoderRef.current) return;
+
+          geocoderRef.current.geocode(
             {
               address: formattedAddress,
               region: "us",
+              bounds: new window.google.maps.LatLngBounds(
+                new window.google.maps.LatLng(24.396308, -125.0), // SW - covers continental US
+                new window.google.maps.LatLng(49.384358, -66.93457) // NE
+              ),
             },
             (results, status) => {
+              if (!isMounted) return;
+
               if (status === "OK" && results && results[0]) {
                 const location = results[0].geometry.location;
                 console.log(
@@ -111,20 +108,23 @@ const RestaurantMap: React.FC<RestaurantMapProps> = ({
                 );
 
                 if (!mapInstanceRef.current && mapRef.current) {
-                  mapInstanceRef.current = new google.maps.Map(mapRef.current, {
-                    center: location,
-                    zoom: 15,
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                    fullscreenControl: false,
-                    styles: [
-                      {
-                        featureType: "poi",
-                        elementType: "labels",
-                        stylers: [{ visibility: "off" }],
-                      },
-                    ],
-                  });
+                  mapInstanceRef.current = new window.google.maps.Map(
+                    mapRef.current,
+                    {
+                      center: location,
+                      zoom: 15,
+                      mapTypeControl: false,
+                      streetViewControl: false,
+                      fullscreenControl: false,
+                      styles: [
+                        {
+                          featureType: "poi",
+                          elementType: "labels",
+                          stylers: [{ visibility: "off" }],
+                        },
+                      ],
+                    }
+                  );
                 } else if (mapInstanceRef.current) {
                   mapInstanceRef.current.setCenter(location);
                 }
@@ -133,11 +133,11 @@ const RestaurantMap: React.FC<RestaurantMapProps> = ({
                   markerRef.current.setMap(null);
                 }
 
-                markerRef.current = new google.maps.Marker({
+                markerRef.current = new window.google.maps.Marker({
                   map: mapInstanceRef.current,
                   position: location,
                   title: restaurantName,
-                  animation: google.maps.Animation.DROP,
+                  animation: window.google.maps.Animation.DROP,
                 });
 
                 setIsLoading(false);
@@ -149,15 +149,19 @@ const RestaurantMap: React.FC<RestaurantMapProps> = ({
 
                 // If we haven't exceeded retry attempts and it's a retryable error
                 if (
-                  retryCount < 2 &&
-                  (status === "OVER_QUERY_LIMIT" || status === "ZERO_RESULTS")
+                  retryCount < 3 &&
+                  (status === "OVER_QUERY_LIMIT" ||
+                    status === "ZERO_RESULTS" ||
+                    status === "UNKNOWN_ERROR")
                 ) {
                   setTimeout(
                     () => attemptGeocoding(retryCount + 1),
-                    1000 * (retryCount + 1)
+                    1000 * Math.pow(2, retryCount) // Exponential backoff
                   );
                 } else {
-                  setError(`Unable to load map location (${status})`);
+                  setError(
+                    `Unable to load map location. Please check the address.`
+                  );
                   setIsLoading(false);
                 }
               }
@@ -167,8 +171,9 @@ const RestaurantMap: React.FC<RestaurantMapProps> = ({
 
         attemptGeocoding();
       } catch (err) {
+        if (!isMounted) return;
         console.error("Map initialization error:", err);
-        setError(err instanceof Error ? err.message : "Failed to load map");
+        setError("Failed to load map. Please try refreshing the page.");
         setIsLoading(false);
       }
     };
@@ -177,6 +182,7 @@ const RestaurantMap: React.FC<RestaurantMapProps> = ({
 
     // Cleanup function
     return () => {
+      isMounted = false;
       if (markerRef.current) {
         markerRef.current.setMap(null);
       }

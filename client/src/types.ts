@@ -38,6 +38,7 @@ export interface Recommendation {
 
 export interface RecommendationsResponse {
   recommendations: Recommendation[];
+  error?: string;
 }
 
 export interface ApiStatus {

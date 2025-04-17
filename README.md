@@ -28,9 +28,25 @@ NutriGo helps nutrition-conscious users discover nearby restaurants that align w
 
 - Node.js (v16+)
 - Python 3.8+
-- API Keys:
-  - OpenAI API Key
-  - Google Maps API Key
+- API Keys (required):
+  - OpenAI API Key ([Get here](https://platform.openai.com/api-keys))
+  - Google Maps API Key ([Get here](https://console.cloud.google.com/google/maps-apis/credentials))
+
+### API Key Setup
+
+1. **OpenAI API Key**:
+
+   - Create an account at [OpenAI](https://platform.openai.com)
+   - Navigate to API Keys section
+   - Create a new secret key
+   - ⚠️ Store this key securely, it cannot be viewed again
+
+2. **Google Maps API Key**:
+   - Create a project in [Google Cloud Console](https://console.cloud.google.com)
+   - Enable Maps JavaScript API and Places API
+   - Create credentials (API key)
+   - ⚠️ Restrict the API key to your domains/IPs
+   - ⚠️ Set usage quotas to prevent unexpected billing
 
 ### Backend Setup
 
@@ -53,12 +69,15 @@ NutriGo helps nutrition-conscious users discover nearby restaurants that align w
    pip install -r requirements.txt
    ```
 
-4. Create `.env` file:
+4. Create `.env` file in the server directory:
 
    ```env
-   OPENAI_API_KEY=your_openai_api_key
-   GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    FLASK_ENV=development
+   FLASK_APP=app.py
+
+   # Add your API keys (keep these secret!)
+   OPENAI_API_KEY=your_key_here
+   GOOGLE_MAPS_API_KEY=your_key_here
    ```
 
 5. Run the server:
@@ -81,11 +100,35 @@ NutriGo helps nutrition-conscious users discover nearby restaurants that align w
    npm install
    ```
 
-3. Start development server:
+3. Create `.env` file in the client directory:
+
+   ```env
+   # Add your Google Maps API key (keep this secret!)
+   REACT_APP_GOOGLE_MAPS_API_KEY=your_key_here
+   ```
+
+4. Start development server:
    ```bash
    npm start
    ```
    Client will run on http://localhost:3000
+
+## Security Best Practices 🔒
+
+### API Keys
+
+- Never commit `.env` files to version control
+- Don't share API keys in code, screenshots, or logs
+- Rotate keys if they've been accidentally exposed
+- Use environment variables in production
+- Set appropriate API key restrictions and quotas
+
+### Environment Files
+
+- Keep separate `.env` files for development and production
+- Add `.env*` to `.gitignore`
+- Use `.env.example` files to document required variables
+- Regularly audit environment files for sensitive data
 
 ## Development 🛠️
 
@@ -127,7 +170,7 @@ nutrigo/
 2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
-5. Open a Pull Request
+5. Create a Pull Request
 
 ## License 📄
 

@@ -1,5 +1,28 @@
+# Web Framework
+flask==3.1.0
+flask-cors==5.0.1
+Werkzeug>=3.1.0
+gunicorn==21.2.0
 streamlit==1.32.0
-openai>=1.0.0,<2.0.0
-python-dotenv==1.0.1
-requests==2.31.0
-googlemaps==4.10.0 
+
+# Environment and Configuration
+python-dotenv==1.1.0
+
+# API Integration
+openai==1.74.0
+googlemaps==4.10.0
+requests==2.32.3
+
+# Utilities
+termcolor==2.3.0
+python-dateutil==2.8.2
+pytz==2024.1
+
+# Testing and Development
+pytest==8.0.2
+pytest-cov==4.1.0
+black==24.2.0
+flake8==7.0.0
+
+# Production
+gevent==24.2.1 
