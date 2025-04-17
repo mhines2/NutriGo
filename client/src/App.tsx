@@ -6,13 +6,13 @@ import "./App.css";
 const App: React.FC = () => {
   return (
     <PreferencesProvider>
-      <div className="app-container fade-in">
+      <div className="app-container">
         <header className="header">
           <div className="container">
             <h1>NutriGo</h1>
             <p>
-              Find restaurants that match your dietary preferences and
-              nutritional goals
+              Discover restaurants that match your dietary goals — powered by
+              AI, built for you.
             </p>
           </div>
         </header>
