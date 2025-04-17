@@ -4,7 +4,7 @@ NutriGo helps nutrition-conscious users discover nearby restaurants that align w
 
 ## Demo 🎥
 
-Check out our [live demo video](NutriGo%20Live%20Demo.mp4) to see NutriGo in action!
+<video src="demo/demo.mp4" controls width="600"></video>
 
 ## Features 🌟
 
