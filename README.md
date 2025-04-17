@@ -2,6 +2,10 @@
 
 NutriGo helps nutrition-conscious users discover nearby restaurants that align with their dietary goals and preferences. Using OpenAI's GPT models and Google Maps, it provides personalized restaurant recommendations with detailed nutritional information.
 
+## Demo 🎥
+
+Check out our [live demo video](NutriGo%20Live%20Demo.mp4) to see NutriGo in action!
+
 ## Features 🌟
 
 ### Core Features
@@ -47,6 +51,29 @@ NutriGo helps nutrition-conscious users discover nearby restaurants that align w
    - Create credentials (API key)
    - ⚠️ Restrict the API key to your domains/IPs
    - ⚠️ Set usage quotas to prevent unexpected billing
+
+### Environment Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/nutrigo.git
+   cd nutrigo
+   ```
+
+2. Create a root `.env` file:
+
+   ```env
+   # API Keys
+   OPENAI_API_KEY=your_key_here
+   GOOGLE_MAPS_API_KEY=your_key_here
+
+   # Server Configuration
+   FLASK_ENV=development
+   FLASK_APP=app.py
+   ```
+
+3. Follow the Backend and Frontend setup instructions below.
 
 ### Backend Setup
 
@@ -142,10 +169,14 @@ nutrigo/
 │   │   ├── context/      # React context
 │   │   └── services/     # API services
 │   └── package.json
-└── server/                # Flask backend
-    ├── app.py            # Main server file
-    ├── requirements.txt  # Python dependencies
-    └── logs/            # Debug logs
+├── public/                # Static assets
+├── server/                # Flask backend
+│   ├── app.py            # Main server file
+│   ├── requirements.txt  # Python dependencies
+│   └── logs/            # Debug logs
+├── .env                  # Root environment variables
+├── nutrigo_prototype.py  # Initial prototype implementation
+└── README.md
 ```
 
 ### Debugging
