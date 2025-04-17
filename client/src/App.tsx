@@ -26,7 +26,8 @@ const App: React.FC = () => {
         <footer className="footer">
           <div className="container">
             <p>
-              &copy; {new Date().getFullYear()} NutriGo. All rights reserved.
+              &copy; {new Date().getFullYear()} Team John Cena. All rights
+              reserved.
             </p>
           </div>
         </footer>
