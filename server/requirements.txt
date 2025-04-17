@@ -3,6 +3,7 @@ flask==3.1.0
 flask-cors==5.0.1
 Werkzeug>=3.1.0
 gunicorn==21.2.0
+streamlit==1.32.0
 
 # Environment and Configuration
 python-dotenv==1.1.0
